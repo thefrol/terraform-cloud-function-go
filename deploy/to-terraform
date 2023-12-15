@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# временный файл, в который будет сохранен код для облачной функции
+ZIP=func.zip
+
+# каталог, в котором лежит спецификация терраформ
+FOLDER=./deploy/terraform
+
+# переменная, в которой хранится URL созданной облачной функции
+URL_VARIABLE=test_func_url
+
+
+# СОЗДАЕМ ФУНКЦИЮ
+zip -x /deploy/* -r $ZIP ./*
+terraform -chdir="$FOLDER"   apply        -var="function_zip=../../$ZIP"
+
+# Удаляем архив
+unlink $ZIP
+
+# пост-обработка, проверим что мы получаем значения и вообще что-то сделаем с этой ссылкой
+# внимание: обязательно использовать -raw чтобы убрать кавычки в выводе
+URL=$(terraform -chdir="$FOLDER" output -raw $URL_VARIABLE )
+curl $URL
+
